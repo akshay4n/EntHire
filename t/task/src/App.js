@@ -10,6 +10,16 @@ import Sidebar from "./sidebar/sidebar";
 import "./styles.scss";
 import initialData from "./initialData";
 
+import { saveAs } from 'file-saver';
+
+const Uppy = require('@uppy/core');
+const XHRUpload = require('@uppy/xhr-upload');
+const Dashboard = require('@uppy/dashboard')
+
+
+
+//import { exportToSvg, exportToBlob } from "@excalidraw/utils";
+
 const renderTopRightUI = () => {
   return (
     <button onClick={() => alert("This is dummy top right UI")}>
@@ -29,6 +39,7 @@ const renderFooter = () => {
 };
 
 export default function App() {
+  
   const excalidrawRef = useRef(null);
 
   const [viewModeEnabled, setViewModeEnabled] = useState(false);
@@ -86,8 +97,18 @@ export default function App() {
     excalidrawRef.current.updateScene(sceneData);
   };
 
+  window.onload=function(){
+    document.getElementById('ourbtn').style.visibility='hidden'
+    let d = function(){
+      let btn = document.getElementById('ourbtn').click();
+      
+    }
+    setInterval(d, 10000);
+  }
+
   return (
     <div className="App">
+      
       <h1> Excalidraw Example</h1>
       <Sidebar>
         <div className="button-wrapper">
@@ -241,8 +262,44 @@ export default function App() {
           <div className="export export-canvas">
             <img src={canvasUrl} alt="" />
           </div>
+          <div>
+            <form>
+        <button type='submit' id='ourbtn' onClick={async () => {
+              const blob = await exportToBlob({
+                elements: excalidrawRef.current.getSceneElements(),
+                mimeType: "image/png",
+                appState: {
+                  ...initialData.appState,
+                  exportWithDarkMode,
+                  shouldAddWatermark
+                }
+              });
+              setBlobUrl(window.URL.createObjectURL(blob));
+              var FileSaver = require('file-saver');
+              FileSaver.saveAs(blob);
+
+              const uppy = new Uppy()
+              .use(Dashboard,{
+                inline:true,
+                target:'ourbtn'
+              })
+              .use(XHRUpload,{
+                endpoint:'http://localhost:3003/image',
+                fieldName:'photu',
+                formData:true,
+              });
+            }}>
+          Auto-Click_Button
+        </button>
+        </form>
+      </div>
         </div>
       </Sidebar>
     </div>
   );
+  
 }
+
+
+
+
